@@ -83,6 +83,8 @@ void loop()
   // Wait until tag is gone
   while(!digitalRead(TAG)); 
       
+    //postData(); // the postData() function does all the work
+    
     truckID = 4766;
     driverName = "Marc Wallace"; 
     RFID_number = data;
@@ -94,8 +96,7 @@ void loop()
     
     // Post Data
     Serial.println("Posting Data!");
-    postData(); // the postData() function does all the work, 
-                // see below.
+
     delay(100);
 }
 
@@ -125,6 +126,8 @@ void postData()
   // Send the curl command:
   Serial.print("Sending command: ");
   Serial.println(curlCmd); // Print command for debug
+  
+  RFID_number = data; 
   
   String composedData = ("http://data.sparkfun.com/input/0lzWz1nqKaIqbYxlXn7l?private_key=D6n7nDkMYlFY1Exby4Mb&name=", driverName, "&number=", String(RFID_number), "&truck", String(truckID));
   phant.runShellCommand(composedData);
@@ -204,8 +207,12 @@ void postData()
             delay(1000);
             digitalWrite(LED1, LOW);
             
+
             }
+            char c = Serial.read();
+            Serial.write(RFID_number);
             Serial.println();
+            postData();
            
         }     
       return 1;
