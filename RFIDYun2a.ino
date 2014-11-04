@@ -50,21 +50,15 @@ String fieldData[NUM_FIELDS];
 ////////////////
 // Pin Inputs //
 ////////////////
-const int triggerPin = 3;
-const int lightPin = A0;
-const int switchPin = 5;
-
-String name = "Yun-anon";
-int number;
-  int truck = 54837;
+  String driverName = "Yun-anon";
+  int RFID_number;
+  int truckID;
   
   // rfid tag pin 
   #define TAG A3 // A3
   byte data;
   int value = 0;
   int LED1 = 13;
-
-  
   
 void setup() 
 {
@@ -74,10 +68,6 @@ void setup()
   
   pinMode(TAG, INPUT);
   pinMode(LED1, OUTPUT); 
-  
-  // Setup Input Pins: ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  pinMode(switchPin, INPUT_PULLUP);
-  pinMode(lightPin, INPUT_PULLUP);
 
   Serial.println("=========== Ready ===========");
 }
@@ -93,17 +83,20 @@ void loop()
   // Wait until tag is gone
   while(!digitalRead(TAG)); 
       
+    truckID = 4766;
+    driverName = "Marc Wallace"; 
+    RFID_number = data;
+    
     // Gather Data
-    fieldData[0] = name; // +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    fieldData[1] = String(number);
-    fieldData[2] = String(truck);
+    fieldData[0] = driverName;
+    fieldData[1] = String(RFID_number);
+    fieldData[2] = String(truckID);
     
     // Post Data
     Serial.println("Posting Data!");
     postData(); // the postData() function does all the work, 
                 // see below.
-    delay(1000);
- 
+    delay(100);
 }
 
 void postData()
@@ -126,12 +119,15 @@ void postData()
   curlCmd += privateKey; 
   curlCmd += "\" "; // Enclose the entire header with quotes.
   for (int i=0; i<NUM_FIELDS; i++)
-    curlCmd += curlData[i]; // Add our data fields to the command
+  curlCmd += curlData[i]; // Add our data fields to the command
   curlCmd += phantURL + publicKey; // Add the server URL, including public key
 
   // Send the curl command:
   Serial.print("Sending command: ");
   Serial.println(curlCmd); // Print command for debug
+  
+  String composedData = ("http://data.sparkfun.com/input/0lzWz1nqKaIqbYxlXn7l?private_key=D6n7nDkMYlFY1Exby4Mb&name=", driverName, "&number=", String(RFID_number), "&truck", String(truckID));
+  phant.runShellCommand(composedData);
   phant.runShellCommand(curlCmd); // Send command through Shell
 
   // Read out the response:
@@ -203,16 +199,13 @@ void postData()
             */
             
             Serial.print(data, HEX);      // changed to println not print    
-            
-            number = data;
-            //setLEDsToLow();
+            RFID_number = data;
+            digitalWrite(LED1, HIGH);
+            delay(1000);
+            digitalWrite(LED1, LOW);
             
             }
             Serial.println();
-            
-  digitalWrite(LED1, HIGH);
-  delay(1000);
-  digitalWrite(LED1, LOW);
            
         }     
       return 1;
