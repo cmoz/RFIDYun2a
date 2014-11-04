@@ -206,14 +206,11 @@ void postData()
             digitalWrite(LED1, HIGH);
             delay(1000);
             digitalWrite(LED1, LOW);
-            
-
             }
             char c = Serial.read();
             Serial.write(RFID_number);
             Serial.println();
-            postData();
-           
+            postData();   
         }     
       return 1;
 
