@@ -34,6 +34,7 @@ Distributed as-is; no warranty is given.
 // Phant Stuff //
 /////////////////
 // URL to phant server (only change if you're not using data.sparkfun
+// String phantURL = "http://data.sparkfun.com/input/";
 String phantURL = "http://data.sparkfun.com/input/";
 // Public key (the one you see in the URL):
 String publicKey = "0lzWz1nqKaIqbYxlXn7l";
@@ -54,16 +55,15 @@ const int lightPin = A0;
 const int switchPin = 5;
 
 String name = "Yun-anon";
-boolean newName = true;
-
+int number;
+  int truck = 54837;
+  
   // rfid tag pin 
   #define TAG A3 // A3
   byte data;
   int value = 0;
   int LED1 = 13;
-  String driverName;
-  int rfidNumber;
-  int truckID = 54837;
+
   
   
 void setup() 
@@ -94,9 +94,9 @@ void loop()
   while(!digitalRead(TAG)); 
       
     // Gather Data
-    fieldData[0] = String(analogRead(lightPin)); // +++++++++++++++++++++++++++++++++++++++++++++++++++++
-    fieldData[1] = String(digitalRead(switchPin));
-    fieldData[2] = name;
+    fieldData[0] = name; // +++++++++++++++++++++++++++++++++++++++++++++++++++++
+    fieldData[1] = String(number);
+    fieldData[2] = String(truck);
     
     // Post Data
     Serial.println("Posting Data!");
@@ -204,7 +204,7 @@ void postData()
             
             Serial.print(data, HEX);      // changed to println not print    
             
-            rfidNumber = data;
+            number = data;
             //setLEDsToLow();
             
             }
