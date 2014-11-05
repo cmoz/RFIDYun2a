@@ -47,19 +47,42 @@ String fieldName[NUM_FIELDS] = {"name", "number", "truck"};
 // We'll use this array later to store our field data
 String fieldData[NUM_FIELDS];
 
+            char tagString[9];
+            int index = 0;
+            boolean reading = false;
+
+//Register your RFID tags here
+String tag1 = "F64708FC";
+String tag2 = "56990AFC";
+String tag3 = "643D2AEB";
+String tag4 = "30008C0B"; 
+String tag5 = "88008C0B";
+
+
+
 ////////////////
 // Pin Inputs //
 ////////////////
-  String driverName = "Yun-anon";
+  String driverName;
   int RFID_number;
-  int truckID;
+  int truckID = 6486;
   
   // rfid tag pin 
   #define TAG A3 // A3
   byte data;
-  int value = 0;
+  //int value = 0;
   int LED1 = 13;
   
+     // The 5 cards that will be listed in this example 
+            boolean tag1Card;
+            boolean tag2Card;
+            boolean tag3Card;
+            boolean tag4Card;
+            boolean tag5Card;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  SETUP
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void setup() 
 {
   Bridge.begin();
@@ -72,9 +95,13 @@ void setup()
   Serial.println("=========== Ready ===========");
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  LOOP
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void loop()
-{  
-     // Wait for tag
+{             
+  // Wait for tag
   while(digitalRead(TAG));
 
   // Read tag ID
@@ -82,30 +109,22 @@ void loop()
 
   // Wait until tag is gone
   while(!digitalRead(TAG)); 
-      
-    //postData(); // the postData() function does all the work
-    
-    truckID = 4766;
-    driverName = "Marc Wallace"; 
-    RFID_number = data;
-    
-    // Gather Data
-    fieldData[0] = driverName;
-    fieldData[1] = String(RFID_number);
-    fieldData[2] = String(truckID);
-    
-    // Post Data
-    Serial.println("Posting Data!");
-
-    delay(100);
+  
+  delay(100);
+  
 }
+  
+  
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  POST DATA
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void postData()
 {
   Process phant; // Used to send command to Shell, and view response
   String curlCmd; // Where we'll put our curl command
   String curlData[NUM_FIELDS]; // temp variables to store curl data
-
+  
   // Construct curl data fields
   // Should look like: --data "fieldName=fieldData"
   for (int i=0; i<NUM_FIELDS; i++)
@@ -127,12 +146,10 @@ void postData()
   Serial.print("Sending command: ");
   Serial.println(curlCmd); // Print command for debug
   
-  RFID_number = data; 
-  
-  String composedData = ("http://data.sparkfun.com/input/0lzWz1nqKaIqbYxlXn7l?private_key=D6n7nDkMYlFY1Exby4Mb&name=", driverName, "&number=", String(RFID_number), "&truck", String(truckID));
-  phant.runShellCommand(composedData);
+  // String composedData = ("http://data.sparkfun.com/input/0lzWz1nqKaIqbYxlXn7l?private_key=D6n7nDkMYlFY1Exby4Mb&name=", driverName, "&number=", String(RFID_number), "&truck", String(truckID));
+  // phant.runShellCommand(composedData);
   phant.runShellCommand(curlCmd); // Send command through Shell
-
+ 
   // Read out the response:
   Serial.print("Response: ");
   // Use the phant process to read in any response from Linux:
@@ -141,9 +158,14 @@ void postData()
     char c = phant.read();
     Serial.write(c);
   }
+  
+  phant.close();
+  
 }
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  READ ID
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
   int readID()
@@ -163,7 +185,7 @@ void postData()
     delay(5);
     //Serial.println("wait for response, !digitalRead(TAG)");
     // Anticipate maximum packet size
-    Wire.requestFrom(0x50, 11); // 11
+    Wire.requestFrom(0x50, 11); // 11 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if(Wire.available())
     {     
       // Get length of packet
@@ -193,27 +215,21 @@ void postData()
           {
             byte data = Wire.read();
             if(data < 0x10) Serial.print(0);
-            /*
-            if (data == 0xF6 && 0x47 && 0x08 && 0xFC) tag1Card ^= true;             
-            if (data == 0x56 && 0x99 && 0x0A && 0xFC) tag2Card ^= true;
-            if (data == 0xEB && 0xE8 && 0xDF && 0x03) tag3Card ^= true;
-            if (data == 0xD2 && 0xB6 && 0x1E && 0x58) tag4Card ^= true; 
-            if (data == 0x2A && 0xFF && 0xD7 && 0x09) tag5Card ^= true;
-            */
-            
-            Serial.print(data, HEX);      // changed to println not print    
-            RFID_number = data;
-            digitalWrite(LED1, HIGH);
-            delay(1000);
-            digitalWrite(LED1, LOW);
+            Serial.print(data, HEX);
+            if (data == 0xF6 && 0x47 && 0x08 && 0xFC) tag1Card = true;  
+            else if (data == 0x56 && 0x99 && 0x0A && 0xFC) tag2Card ^= true;
+            else if (data == 0x64 && 0x3D && 0x2A && 0xEB) tag3Card ^= true; 
+            else if (data == 0x30 && 0x00 && 0x8C && 0x0B) tag4Card ^= true; 
+            else if (data == 0x88 && 0x00 && 0x8C && 0x0B) tag5Card ^= true;
+ 
             }
-            char c = Serial.read();
-            Serial.write(RFID_number);
             Serial.println();
-            postData();   
+            
+            checkID();
+          
         }     
       return 1;
-
+      
       case 0x0A: // Collision
         Serial.println("Collision detected");
         break;
@@ -230,5 +246,70 @@ void postData()
   }
   // No tag found or no response
   return 0;
+      Serial.println("no tag");
   }
+  
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  CHECK ID
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  void checkID(){
+    
+    if (tag1Card == true) {
+
+                   driverName = "Driver 1";
+                   fieldData[0] = driverName;
+                   //fieldData[1] = String(TAG);
+                   fieldData[1] = String(tag1);
+                   fieldData[2] = String(truckID);
+                   postData(); // the postData() function does all the work
+                   tag1Card ^= true;
+
+    } else if (tag2Card == true) {
+
+                   driverName = "Driver 2";
+                   fieldData[0] = driverName;
+                   fieldData[1] = String(tag2);
+                   //fieldData[1] = String(tagString);
+                   fieldData[2] = String(truckID);
+                   postData(); // the postData() function does all the work
+                   tag2Card ^= true;
+                      
+    } else if (tag3Card == true) {
+
+                   driverName = "Driver 3";
+                   fieldData[0] = driverName;
+                   fieldData[1] = String(tag3);
+                   //fieldData[1] = String(tagString);
+                   fieldData[2] = String(truckID);
+                   postData(); // the postData() function does all the work
+                   tag3Card ^= true;
+                   
+    } else if (tag4Card == true) {
+
+                   driverName = "Driver 4";
+                   fieldData[0] = driverName;
+                   fieldData[1] = String(tag4);
+                   //fieldData[1] = String(tagString);
+                   fieldData[2] = String(truckID);
+                   postData(); // the postData() function does all the work
+                   tag4Card ^= true;
+                     
+     } else if (tag5Card == true) {
+
+                   driverName = "Driver 5";
+                   fieldData[0] = driverName;
+                   fieldData[1] = String(tag5);
+                   //fieldData[1] = String(tagString);
+                   fieldData[2] = String(truckID);
+                   postData(); // the postData() function does all the work
+                   tag5Card ^= true;
+                     
+    } else {
+      
+      Serial.println("Card detected");
+  
+  }
+  }
+
     
