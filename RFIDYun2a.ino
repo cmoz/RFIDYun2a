@@ -55,7 +55,6 @@ String fieldData[NUM_FIELDS];
 String tag1 = "F64708FC";
 String tag2 = "56990AFC";
 String tag3 = "9BD8AF9B";
-String tag4 = "82D51E58"; 
 
 
 ////////////////
@@ -72,15 +71,15 @@ String tag4 = "82D51E58";
   int LED1 = 13;
   
   int redPin = 11;
-  int bluePin = 5;
+  int bluePin = 9;
   int greenPin = 6;
   
      // The 5 cards that will be listed in this example 
             boolean tag1Card;
             boolean tag2Card;
             boolean tag3Card;
-            boolean tag4Card;
-
+            
+#define COMMON_ANODE
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  SETUP
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,8 +97,13 @@ void setup()
   pinMode(bluePin, OUTPUT);
   pinMode(greenPin, OUTPUT);
   
-  setColor(255, 0, 0);  // red
-  delay(1000);
+  //setColor(255, 0, 0);  // red
+  digitalWrite(redPin, HIGH);
+  tag1Card = false;
+  tag2Card = false;
+  tag3Card = false;
+  
+  delay(10);
   Serial.println("=========== Ready ===========");
 }
 
@@ -130,6 +134,12 @@ void loop()
 ///////////////////////////////////////////////////////////////////////////////////////////////////////// 
   void setColor(int red, int green, int blue)
 {
+    #ifdef COMMON_ANODE
+    red = 255 - red;
+    green = 255 - green;
+    blue = 255 - blue;
+    #endif
+  
   analogWrite(redPin, red);
   analogWrite(greenPin, green);
   analogWrite(bluePin, blue);  
@@ -207,7 +217,7 @@ void postData()
     delay(5);
     //Serial.println("wait for response, !digitalRead(TAG)");
     // Anticipate maximum packet size
-    Wire.requestFrom(0x50, 11); // 11 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    Wire.requestFrom(0x50, 11); // 11 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     if(Wire.available())
     {     
       // Get length of packet
@@ -238,15 +248,25 @@ void postData()
             byte data = Wire.read();
             if(data < 0x10) Serial.print(0);
            
-            if (data == 0xF6 && 0x47 && 0x08 && 0xFC) tag1Card = true;  
-            if (data == 0x56 && 0x99 && 0x0A && 0xFC) tag2Card = true;
-            if (data == 0x9B && 0xD8 && 0xAF && 0x9B) tag3Card = true; 
-             
-            Serial.print(data, HEX);
+            if (data == 0xF6 && 0x47 && 0x08 && 0xFC) {
+              tag1Card ^= true;  
+              checkID1();
+            }
             
+            else if (data == 0x56 && 0x99 && 0x0A && 0xFC) {
+              tag2Card ^= true;
+              checkID2();
+            }
+            
+            else if (data == 0x9B && 0xD8 && 0xAF && 0x9B) {
+              tag3Card ^= true; 
+              checkID3();
+            }
+     
+            Serial.print(data, HEX);
             }
             Serial.println();
-            checkID();
+            
         }     
       return 1;
       
@@ -263,6 +283,7 @@ void postData()
       }
       return -1;
     }
+    
   }
   // No tag found or no response
   return 0;
@@ -273,39 +294,76 @@ void postData()
 //  CHECK ID
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
   
-  void checkID(){
+  void checkID1(){
     
     if (tag1Card == true) {
-                   setColor(0, 255, 0);  // green
+                   
                    driverName = "Driver 1";
                    fieldData[0] = driverName;
                    fieldData[1] = String(tag1);
                    fieldData[2] = String(truckID);
                    postData(); // the postData() function does all the work
-                   delay(1000);
-    } 
-    
+                   digitalWrite(bluePin, HIGH);
+                   digitalWrite(redPin, LOW);
+                   delay(100);
+    } else {
+                   driverName = "Driver 1, Signed Out";
+                   fieldData[0] = driverName;
+                   fieldData[1] = String(tag1);
+                   fieldData[2] = String(truckID);
+                   postData();
+                   digitalWrite(redPin, HIGH);
+                   digitalWrite(bluePin, LOW);
+                   delay(100);
+    }
+  }
+  
+  void checkID2(){
+   
     if (tag2Card == true) {
-                   setColor(0, 255, 0);  // green
+                   
                    driverName = "Driver 2";
                    fieldData[0] = driverName;
                    fieldData[1] = String(tag2);
                    fieldData[2] = String(truckID);
-                   postData(); 
-                   delay(1000);
-    } 
+                   postData();
+                   digitalWrite(bluePin, HIGH);
+                   digitalWrite(redPin, LOW);
+                   delay(100);
+    } else {
+                   driverName = "Driver 2, Signed Out";
+                   fieldData[0] = driverName;
+                   fieldData[1] = String(tag2);
+                   fieldData[2] = String(truckID);
+                   postData();
+                   digitalWrite(redPin, HIGH);
+                   digitalWrite(bluePin, LOW);
+                   delay(100);
+    }
+  }
+  
+ void checkID3(){
    
     if (tag3Card == true) {
-                   setColor(0, 255, 0);  // green
+                   
                    driverName = "Driver 3";
                    fieldData[0] = driverName;
                    fieldData[1] = String(tag3);
                    fieldData[2] = String(truckID);
                    postData();
-                   delay(1000);
+                   digitalWrite(bluePin, HIGH);
+                   digitalWrite(redPin, LOW);
+                   delay(100);
+    } else {
+                        
+                   driverName = "Driver 3, Signed Out";
+                   fieldData[0] = driverName;
+                   fieldData[1] = String(tag3);
+                   fieldData[2] = String(truckID);
+                   postData();
+                   digitalWrite(redPin, HIGH);
+                   digitalWrite(bluePin, LOW);
+                   delay(100);
     }
-    
-    {
-      Serial.println("Card detected");
-  }
-  }  
+ 
+}  
