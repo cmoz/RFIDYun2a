@@ -54,10 +54,8 @@ String fieldData[NUM_FIELDS];
 //Register your RFID tags here
 String tag1 = "F64708FC";
 String tag2 = "56990AFC";
-String tag3 = "643D2AEB";
-String tag4 = "30008C0B"; 
-String tag5 = "88008C0B";
-
+String tag3 = "9BD8AF9B";
+String tag4 = "82D51E58"; 
 
 
 ////////////////
@@ -73,12 +71,16 @@ String tag5 = "88008C0B";
   //int value = 0;
   int LED1 = 13;
   
+  int redPin = 11;
+  int bluePin = 5;
+  int greenPin = 6;
+  
      // The 5 cards that will be listed in this example 
             boolean tag1Card;
             boolean tag2Card;
             boolean tag3Card;
             boolean tag4Card;
-            boolean tag5Card;
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  SETUP
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +93,13 @@ void setup()
   
   pinMode(TAG, INPUT);
   pinMode(LED1, OUTPUT); 
-
+  
+  pinMode(redPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  
+  setColor(255, 0, 0);  // red
+  delay(1000);
   Serial.println("=========== Ready ===========");
 }
 
@@ -101,6 +109,7 @@ void setup()
 
 void loop()
 {             
+  
   // Wait for tag
   while(digitalRead(TAG));
 
@@ -113,6 +122,19 @@ void loop()
   delay(100);
   
 }
+ 
+ 
+   
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//  COLOR LED
+///////////////////////////////////////////////////////////////////////////////////////////////////////// 
+  void setColor(int red, int green, int blue)
+{
+  analogWrite(redPin, red);
+  analogWrite(greenPin, green);
+  analogWrite(bluePin, blue);  
+}
+  
   
   
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -215,18 +237,16 @@ void postData()
           {
             byte data = Wire.read();
             if(data < 0x10) Serial.print(0);
-            Serial.print(data, HEX);
+           
             if (data == 0xF6 && 0x47 && 0x08 && 0xFC) tag1Card = true;  
-            else if (data == 0x56 && 0x99 && 0x0A && 0xFC) tag2Card ^= true;
-            else if (data == 0x64 && 0x3D && 0x2A && 0xEB) tag3Card ^= true; 
-            else if (data == 0x30 && 0x00 && 0x8C && 0x0B) tag4Card ^= true; 
-            else if (data == 0x88 && 0x00 && 0x8C && 0x0B) tag5Card ^= true;
- 
+            if (data == 0x56 && 0x99 && 0x0A && 0xFC) tag2Card = true;
+            if (data == 0x9B && 0xD8 && 0xAF && 0x9B) tag3Card = true; 
+             
+            Serial.print(data, HEX);
+            
             }
             Serial.println();
-            
             checkID();
-          
         }     
       return 1;
       
@@ -256,60 +276,36 @@ void postData()
   void checkID(){
     
     if (tag1Card == true) {
-
+                   setColor(0, 255, 0);  // green
                    driverName = "Driver 1";
                    fieldData[0] = driverName;
-                   //fieldData[1] = String(TAG);
                    fieldData[1] = String(tag1);
                    fieldData[2] = String(truckID);
                    postData(); // the postData() function does all the work
-                   tag1Card ^= true;
-
-    } else if (tag2Card == true) {
-
+                   delay(1000);
+    } 
+    
+    if (tag2Card == true) {
+                   setColor(0, 255, 0);  // green
                    driverName = "Driver 2";
                    fieldData[0] = driverName;
                    fieldData[1] = String(tag2);
-                   //fieldData[1] = String(tagString);
                    fieldData[2] = String(truckID);
-                   postData(); // the postData() function does all the work
-                   tag2Card ^= true;
-                      
-    } else if (tag3Card == true) {
-
+                   postData(); 
+                   delay(1000);
+    } 
+   
+    if (tag3Card == true) {
+                   setColor(0, 255, 0);  // green
                    driverName = "Driver 3";
                    fieldData[0] = driverName;
                    fieldData[1] = String(tag3);
-                   //fieldData[1] = String(tagString);
                    fieldData[2] = String(truckID);
-                   postData(); // the postData() function does all the work
-                   tag3Card ^= true;
-                   
-    } else if (tag4Card == true) {
-
-                   driverName = "Driver 4";
-                   fieldData[0] = driverName;
-                   fieldData[1] = String(tag4);
-                   //fieldData[1] = String(tagString);
-                   fieldData[2] = String(truckID);
-                   postData(); // the postData() function does all the work
-                   tag4Card ^= true;
-                     
-     } else if (tag5Card == true) {
-
-                   driverName = "Driver 5";
-                   fieldData[0] = driverName;
-                   fieldData[1] = String(tag5);
-                   //fieldData[1] = String(tagString);
-                   fieldData[2] = String(truckID);
-                   postData(); // the postData() function does all the work
-                   tag5Card ^= true;
-                     
-    } else {
-      
-      Serial.println("Card detected");
-  
-  }
-  }
-
+                   postData();
+                   delay(1000);
+    }
     
+    {
+      Serial.println("Card detected");
+  }
+  }  
