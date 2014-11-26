@@ -98,7 +98,7 @@ void setup()
   pinMode(greenPin, OUTPUT);
   
   //setColor(255, 0, 0);  // red
-  digitalWrite(redPin, HIGH);
+  analogWrite(redPin, 100);
   tag1Card = false;
   tag2Card = false;
   tag3Card = false;
@@ -303,8 +303,8 @@ void postData()
                    fieldData[1] = String(tag1);
                    fieldData[2] = String(truckID);
                    postData(); // the postData() function does all the work
-                   digitalWrite(bluePin, HIGH);
-                   digitalWrite(redPin, LOW);
+                   analogWrite(bluePin, 50);
+                   analogWrite(redPin, 0);
                    delay(100);
     } else {
                    driverName = "Driver 1, Signed Out";
@@ -312,8 +312,8 @@ void postData()
                    fieldData[1] = String(tag1);
                    fieldData[2] = String(truckID);
                    postData();
-                   digitalWrite(redPin, HIGH);
-                   digitalWrite(bluePin, LOW);
+                   analogWrite(redPin, 100);
+                   analogWrite(bluePin, 0);
                    delay(100);
     }
   }
@@ -327,8 +327,8 @@ void postData()
                    fieldData[1] = String(tag2);
                    fieldData[2] = String(truckID);
                    postData();
-                   digitalWrite(bluePin, HIGH);
-                   digitalWrite(redPin, LOW);
+                   analogWrite(bluePin, 50);
+                   analogWrite(redPin, 0);
                    delay(100);
     } else {
                    driverName = "Driver 2, Signed Out";
@@ -336,8 +336,8 @@ void postData()
                    fieldData[1] = String(tag2);
                    fieldData[2] = String(truckID);
                    postData();
-                   digitalWrite(redPin, HIGH);
-                   digitalWrite(bluePin, LOW);
+                   analogWrite(redPin, 100);
+                   analogWrite(bluePin, 0);
                    delay(100);
     }
   }
@@ -351,8 +351,8 @@ void postData()
                    fieldData[1] = String(tag3);
                    fieldData[2] = String(truckID);
                    postData();
-                   digitalWrite(bluePin, HIGH);
-                   digitalWrite(redPin, LOW);
+                   digitalWrite(bluePin, 50);
+                   digitalWrite(redPin, 0);
                    delay(100);
     } else {
                         
